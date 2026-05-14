@@ -1,11 +1,14 @@
 name: MyFirstAudit  # 任务的名字
 
-on: [push] # 触发条件：只要我执行 git push，任务就开始
-
+on:
+  push:
+    branches: [ "master" ]  # 明确告诉它，只在 master 分支推送时运行
+  pull_request:
+    branches: [ "master" ]
 jobs:
   run-tests:
     runs-on: ubuntu-latest # 在 GitHub 提供的 Linux 电脑上运行
-    
+
     steps:
       - uses: actions/checkout@v4 # 第一步：把我的代码复制到这台云端电脑上
 

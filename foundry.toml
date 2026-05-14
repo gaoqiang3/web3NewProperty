@@ -1,8 +1,12 @@
 [profile.default]
 src = "src"
 out = "out"
+script = 'script'
+test = 'test'
 libs = ["node_modules", "lib"]
 remappings = ["@openzeppelin/=node_modules/@openzeppelin/"]
 ffi = true #允许foundry跨界调用python
-
+[invariant]
+runs = 500         # CI 运行不变性测试的次数
+depth = 15
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
