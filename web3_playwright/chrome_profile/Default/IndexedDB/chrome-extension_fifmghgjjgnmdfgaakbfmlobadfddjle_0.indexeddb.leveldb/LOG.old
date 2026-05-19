@@ -1,0 +1,24 @@
+2026/05/17-14:55:31.384 215c Reusing MANIFEST E:\learn\PythonProject1\web3_playwright\chrome_profile\Default\IndexedDB\chrome-extension_fifmghgjjgnmdfgaakbfmlobadfddjle_0.indexeddb.leveldb/MANIFEST-000001
+2026/05/17-14:55:31.384 215c Recovering log #25
+2026/05/17-14:55:31.385 215c Reusing old log E:\learn\PythonProject1\web3_playwright\chrome_profile\Default\IndexedDB\chrome-extension_fifmghgjjgnmdfgaakbfmlobadfddjle_0.indexeddb.leveldb/000025.log 
+2026/05/17-14:55:32.126 54ac Level-0 table #30: started
+2026/05/17-14:55:32.130 54ac Level-0 table #30: 56214 bytes OK
+2026/05/17-14:55:32.134 54ac Delete type=0 #25
+2026/05/17-14:55:32.135 215c Manual compaction at level-0 from '\x00\x10\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x11\x00\x00\x00' @ 0 : 0; will stop at '\x00\x10\x00\x00\x05' @ 4947 : 1
+2026/05/17-14:55:32.135 215c Compacting 1@0 + 1@1 files
+2026/05/17-14:55:32.139 215c Generated table #31@0: 901 keys, 12838 bytes
+2026/05/17-14:55:32.139 215c Compacted 1@0 + 1@1 files => 12838 bytes
+2026/05/17-14:55:32.140 215c compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/17-14:55:32.141 215c Delete type=2 #30
+2026/05/17-14:55:32.141 215c Manual compaction at level-0 from '\x00\x10\x00\x00\x05' @ 4947 : 1 .. '\x00\x11\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/17-14:55:32.167 5288 Level-0 table #33: started
+2026/05/17-14:55:32.171 5288 Level-0 table #33: 719 bytes OK
+2026/05/17-14:55:32.172 5288 Delete type=2 #27
+2026/05/17-14:55:32.172 5288 Delete type=0 #29
+2026/05/17-14:55:32.173 2650 Manual compaction at level-0 from '\x00\x11\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x12\x00\x00\x00' @ 0 : 0; will stop at '\x00\x11\x00\x00\x05' @ 4964 : 1
+2026/05/17-14:55:32.173 2650 Compacting 1@0 + 1@1 files
+2026/05/17-14:55:32.176 2650 Generated table #34@0: 901 keys, 12835 bytes
+2026/05/17-14:55:32.176 2650 Compacted 1@0 + 1@1 files => 12835 bytes
+2026/05/17-14:55:32.177 2650 compacted to: files[ 0 1 1 0 0 0 0 ]
+2026/05/17-14:55:32.177 2650 Delete type=2 #33
+2026/05/17-14:55:32.178 2650 Manual compaction at level-0 from '\x00\x11\x00\x00\x05' @ 4964 : 1 .. '\x00\x12\x00\x00\x00' @ 0 : 0; will stop at (end)

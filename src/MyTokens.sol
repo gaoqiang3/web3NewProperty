@@ -24,6 +24,7 @@ contract MyTokens is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC1363, ERC2
         Ownable(initialOwner)
         ERC20Permit("MySuperBoomToken")
     {
+        _mint(initialOwner, 1000000 * 10**18);//先给自己印100万
         isExcludedFromFees[initialOwner] = true;
     }
 

@@ -9,17 +9,17 @@ def compile_my_token():
     print(f"⏳ 正在检查 solc {solc_version}...")
     install_solc(solc_version)
 
-    # 2. 路径设置（基于你的截图结构）
+    # 2. 路径设置
     # 当前脚本在 scripts 目录下
     script_dir = os.path.abspath(os.path.dirname(__file__))
     # 向上跳一级，到达项目根目录 PythonProject1
     project_root = os.path.dirname(script_dir)
 
-    # 指向 contract 文件夹（根据截图是单数 contract）
+    # 指向 contract 文件夹
     source_path = os.path.join(project_root, "contract", "MyTokens.sol.sol")
     # 指向根目录下的 node_modules
     oz_root = os.path.join(project_root, "node_modules")
-    # 设置编译产物保存路径（建议放在根目录下或 scripts 下）
+    # 设置编译产物保存路径
     build_dir = os.path.join(project_root, "build")
 
     # print(f"📂 项目根目录: {project_root}")
@@ -53,7 +53,7 @@ def compile_my_token():
         }
     }
 
-    print("⚙️  正在执行自动化编译...")
+    print("⚙️  执行自动化编译...")
     compiled_sol = compile_standard(
         input_json,
         solc_version=solc_version,

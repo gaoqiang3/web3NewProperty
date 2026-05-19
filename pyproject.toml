@@ -40,6 +40,9 @@ dependencies = [
     "pytest-cov>=7.1.0", #生成测试覆盖率
     "py-solc-x>=2.0.5", #实现合约集成ci
     "eth-tester[py-evm]>=0.13.0b1",
+    "playwright>=1.59.0", #用于前端自动化
+    "openai>=2.33.0",
+    "jupyter>=1.1.1",
 ]
 
 [[tool.uv.index]]

@@ -1,0 +1,6 @@
+2026/05/17-14:57:35.589 3b88 Reusing MANIFEST E:\learn\PythonProject1\web3_playwright\chrome_profile\Default\IndexedDB\chrome-extension_fifmghgjjgnmdfgaakbfmlobadfddjle_0.indexeddb.leveldb/MANIFEST-000001
+2026/05/17-14:57:35.590 3b88 Recovering log #32
+2026/05/17-14:57:35.590 3b88 Reusing old log E:\learn\PythonProject1\web3_playwright\chrome_profile\Default\IndexedDB\chrome-extension_fifmghgjjgnmdfgaakbfmlobadfddjle_0.indexeddb.leveldb/000032.log 
+2026/05/17-14:57:35.591 3b88 Delete type=2 #31
+2026/05/17-14:57:36.530 a9c Manual compaction at level-0 from '\x00\x12\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x13\x00\x00\x00' @ 0 : 0; will stop at (end)
+2026/05/17-14:57:36.542 a9c Manual compaction at level-0 from '\x00\x13\x00\x00\x00' @ 72057594037927935 : 1 .. '\x00\x14\x00\x00\x00' @ 0 : 0; will stop at (end)

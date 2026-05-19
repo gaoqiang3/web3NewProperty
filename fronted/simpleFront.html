@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>强哥的保险柜合约</title>
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; padding: 40px; color: #333; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .card { border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        button { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #1d4ed8; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 100px; }
+        .status-box { background: #1e293b; color: #34d399; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 13px; min-height: 50px; margin-bottom: 15px; }
+        .label { font-weight: bold; color: #64748b; font-size: 12px; text-transform: uppercase; }
+        /* 新增标签样式 */
+        .badge { display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-left: 5px; }
+        .badge-normal { background: #e2e8f0; color: #475569; }
+        .badge-whitelist { background: #dbeafe; color: #1e40af; }
+        .badge-nofee { background: #d1fae5; color: #065f46; }
+        .tax-preview { font-size: 13px; color: #64748b; margin-top: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🛡️ 这是一个保险柜</h2>
+
+    <div class="card">
+        <div class="label">钱包状态</div>
+        <div id="walletAddr" style="margin: 10px 0; font-weight: bold; word-break: break-all;">未连接</div>
+        <!-- 新增用户身份显示 -->
+        <div style="margin-bottom: 10px;">
+            <span>当前身份:</span> <span id="userRole" class="badge badge-normal">未连接</span>
+        </div>
+        <button id="connectBtn">连接 MetaMask</button>
+    </div>
+
+    <div class="card">
+        <div class="label">合约资产审计</div>
+        <p>Token地址: <small id="tokenAddress">0x9fE46...</small></p>
+        <p>保险柜余额 : <strong id="vaultBalance">0.0</strong> MTBK (wei)</p>
+    </div>
+
+    <div class="card">
+        <!-- 动态更新税费提示 -->
+        <div class="label">存入操作 <span id="taxTitleNotice">(预计扣除 1% 税费)</span></div>
+        <div style="margin-top: 10px;">
+            <input type="number" id="amount" value="100" step="10">
+            <button id="depositBtn">确认存入</button>
+        </div>
+        <!-- 新增实时税费计算面板 -->
+        <div class="tax-preview">
+            <div>预计扣除税费: <span id="estimatedTax" style="color: #dc2626; font-weight: bold;">0.0</span> MTBK</div>
+            <div>实际入柜金额: <span id="estimatedIntoVault" style="color: #16a34a; font-weight: bold;">0.0</span> MTBK</div>
+        </div>
+    </div>
+
+    <div class="label">操作日志</div>
+    <div id="logBox" class="status-box">等待指令...</div>
+    <button id="releaseBtn" onclick="releaseTokens()" disabled style="background-color: #28a745; color: white;">提取资产 (Release)</button>
+    <button id="skipTimeBtn" onclick="skipChainTime()" style="background-color: #9333ea; color: white;">⚡ 测试开挂：快进12小时</button>
+</div>
+
+<script>
+    // 配置部署后的地址
+    const TOKEN_ADDR = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+    const VAULT_ADDR = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+
+    // 扩展了 ERC20 ABI 用于查询白名单和免税状态
+    const ERC20_ABI = [
+        "function approve(address spender, uint256 amount) public returns (bool)",
+        "function balanceOf(address account) view returns (uint256)",
+        "function whiteList(address account) view returns (bool)",
+        "function isExcludedFromFees(address account) view returns (bool)"
+    ];
+    const VAULT_ABI = [
+        "function lockTokens(uint256 amount, uint256 duration) external",
+        "function getLockInfo(address user) view returns (uint256, uint256, bool, uint256)",
+        "function canRelease(address user) view returns (bool)",
+        "function releaseTokens() external"
+    ];
+
+    let provider, signer, tokenContract, vaultContract;
+    let isUserNoFee = false; // 全局缓存当前用户是否免税
+
+    // 统一日志打印函数
+    const log = (msg) => document.getElementById('logBox').innerText = `> ${msg}`;
+
+    // 连接钱包
+    document.getElementById('connectBtn').onclick = async () => {
+        if (!window.ethereum) return alert("请安装 MetaMask");
+        provider = new ethers.providers.Web3Provider(window.ethereum);
+        await provider.send("eth_requestAccounts", []);
+        signer = provider.getSigner();
+        const addr = await signer.getAddress();
+        document.getElementById('walletAddr').innerText = addr;
+
+        tokenContract = new ethers.Contract(TOKEN_ADDR, ERC20_ABI, signer);
+        vaultContract = new ethers.Contract(VAULT_ADDR, VAULT_ABI, signer);
+
+        document.getElementById('tokenAddress').innerText = TOKEN_ADDR;
+
+        // 连上之后统一调用刷新
+        await refreshBalance();
+        updateTaxCalculation(); // 初始化税费计算显示
+        log("钱包已连接，准备就绪。");
+    };
+
+    // 监听输入框变化，实时计算税费
+    document.getElementById('amount').oninput = updateTaxCalculation;
+
+    // 实时计算税费显示逻辑
+    function updateTaxCalculation() {
+        const amountInput = document.getElementById('amount').value;
+        if (!amountInput || isNaN(amountInput) || amountInput <= 0) {
+            document.getElementById('estimatedTax').innerText = "0.0";
+            document.getElementById('estimatedIntoVault').innerText = "0.0";
+            return;
+        }
+
+        // 根据从链上读取的免税状态决定税率
+        // 合约逻辑：如果 isExcludedFromFees[from] 为 true，则不扣税
+        if (isUserNoFee) {
+            document.getElementById('estimatedTax').innerText = "0.0 (享受免税)";
+            document.getElementById('estimatedIntoVault').innerText = amountInput;
+            document.getElementById('taxTitleNotice').innerText = "(您享有免税特权 ✨)";
+            document.getElementById('taxTitleNotice').style.color = "#16a34a";
+        } else {
+            // 1% 税率计算 (value * 100 / 10000)
+            const tax = amountInput * 0.01;
+            const intoVault = amountInput - tax;
+            document.getElementById('estimatedTax').innerText = tax.toFixed(4);
+            document.getElementById('estimatedIntoVault').innerText = intoVault.toFixed(4);
+            document.getElementById('taxTitleNotice').innerText = "(扣除 1% 税费)";
+            document.getElementById('taxTitleNotice').style.color = "#dc2626";
+        }
+    }
+
+    // 刷新余额与动态置灰逻辑 —— 增加用户身份识别
+    async function refreshBalance() {
+        try {
+            if (!vaultContract || !signer || !tokenContract) return;
+
+            const addr = await signer.getAddress();
+            log("正在从区块链读取锁仓状态及用户身份...");
+
+            // ==================== 🛠️ 新增：读取用户链上身份 ====================
+            try {
+                const isWhite = await tokenContract.whiteList(addr);
+                const isExcluded = await tokenContract.isExcludedFromFees(addr);
+                isUserNoFee = isExcluded; // 缓存供税费计算器使用
+
+                const roleBadge = document.getElementById('userRole');
+                if (isExcluded) {
+                    roleBadge.innerText = "免税大户 👑";
+                    roleBadge.className = "badge badge-nofee";
+                } else if (isWhite) {
+                    roleBadge.innerText = "白名单用户 📜";
+                    roleBadge.className = "badge badge-whitelist";
+                } else {
+                    roleBadge.innerText = "普通打工人 🧑‍🌾";
+                    roleBadge.className = "badge badge-normal";
+                }
+                // 身份更新后，同步刷新下方的税费预览
+                updateTaxCalculation();
+            } catch (roleError) {
+                console.error("读取身份失败:", roleError);
+            }
+            // ===================================================================
+
+            try {
+                // 调用合约拿到完整的结构体数组
+                const lockInfo = await vaultContract.getLockInfo(addr);
+                const principalAmount = lockInfo[0]; // 本金 (BigNumber)
+                const isReleased = lockInfo[2];      // 是否已取出
+
+                // 渲染余额到页面
+                document.getElementById('vaultBalance').innerText = principalAmount.toString();
+                console.log("【测试成功】锁仓本金刷新为 (wei):", principalAmount.toString());
+
+                // 联动控制【提取资产】按钮的状态
+                document.getElementById('releaseBtn').disabled = (principalAmount.eq(0) || isReleased);
+            } catch (contractError) {
+                console.warn("⚠️ [合约调用失败] 链上未检测到对应的智能合约字节码或网络不匹配:", contractError.message);
+                log("提示：链上未检测到有效合约，请检查 Anvil 是否重启或地址是否正确。");
+                document.getElementById('vaultBalance').innerText = "0 (未对齐合约)";
+            }
+
+        } catch (error) {
+            console.error("🔥【刷新发生严重错误】:", error);
+        }
+    }
+
+    // 存入逻辑
+    document.getElementById('depositBtn').onclick = async () => {
+        const amount = document.getElementById('amount').value;
+        const amountWei = ethers.utils.parseEther(amount);
+
+        try {
+            log("正在请求 Token 授权...");
+            const approveTx = await tokenContract.approve(VAULT_ADDR, amountWei);
+            await approveTx.wait();
+
+            log("授权成功，正在存入 Vault...");
+            // 存入 60秒 锁定期
+            const depositTx = await vaultContract.lockTokens(amountWei, 60);
+            await depositTx.wait();
+
+            log("存入成功！");
+            await refreshBalance();
+        } catch (e) {
+            log("操作失败: " + e.message);
+        }
+    };
+
+    // 提取资产逻辑
+    async function releaseTokens() {
+        try {
+            log("正在发起 releaseTokens 请求，准备提取本金与应得利息...");
+
+            const tx = await vaultContract.releaseTokens();
+            log(`释放交易已提交给小狐狸，等待链上确认... Hash: ${tx.hash}`);
+
+            await tx.wait();
+            log("✅ 提取成功！本金及利息已退回您的个人钱包账户。");
+
+            await refreshBalance();
+        } catch (error) {
+            console.error(error);
+            log(`🔥 提取失败。原因: ${error.reason || error.message}`);
+        }
+    }
+
+    // skipChainTime 函数走纯净的 HTTP 端口直连
+    async function skipChainTime() {
+        try {
+            log("正在通过原生 Fetch 绕过小狐狸，直连 Anvil 节点拨快时钟...");
+
+            // 1. 直连拨快
+            await fetch("http://127.0.0.1:8545", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    jsonrpc: "2.0",
+                    method: "evm_increaseTime",
+                    params: [7200],
+                    id: 1
+                })
+            });
+
+            // 2. 强行挖空块
+            await fetch("http://127.0.0.1:8545", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    jsonrpc: "2.0",
+                    method: "evm_mine",
+                    params: [],
+                    id: 2
+                })
+            });
+
+            log("🚀 成功穿越！链上时钟已被强制推迟 2 小时！正在重新对账...");
+            await refreshBalance();
+
+        } catch (error) {
+            console.error(error);
+            log("快进时间失败: " + error.message);
+        }
+    }
+</script>
+</body>
+</html>

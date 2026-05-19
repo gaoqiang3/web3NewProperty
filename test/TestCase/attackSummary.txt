@@ -1,0 +1,27 @@
+=== SUMMARY_START ===
+在 `testFuzz_MintAnyAmount` 函数中，我们需要考虑以下边界条件：
+1. **最小值**：确保 `amount` 大于 0。
+2. **最大值**：假设合约中有逻辑限制，例如单次铸造的最大数量为 500 * 10^18（即 500 个代币）。
+3. **非零值**：确保 `amount` 不为 0。
+4. **合理范围**：确保 `amount` 在合理的范围内，避免溢出或异常行为。
+
+这些边界条件可以通过 `vm.assume` 来实现。具体来说，我们可以在 `testFuzz_MintAnyAmount` 函数中添加以下限制：
+- `vm.assume(amount > 0 && amount <= 500);`
+
+这样可以确保模糊测试时输入的 `amount` 值在合理范围内，避免超出合约逻辑限制。
+
+=== SUMMARY_END ===
+
+=== CODE_START ===
+function test_Attack() public {
+    uint256 amount = 501; // 超过最大限制的值
+    vm.assume(amount > 0 && amount <= 500); // 模拟 fuzz 测试中的边界条件
+
+    uint256 actualAmount = amount * 10**18;
+
+    vm.prank(owner);
+    token.mint(bob, actualAmount);
+
+    assertEq(token.balanceOf(bob), actualAmount);
+}
+=== CODE_END ===

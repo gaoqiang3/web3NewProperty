@@ -1,0 +1,42 @@
+VULNERABILITIES:
+- Reentrancy: In the `releaseTokens` function, the state variables (`lock.isReleased` and `lockedAmount`) are updated before the token transfer. An attacker can re-enter the `releaseTokens` function to withdraw multiple times.
+- Fee Bypass: The `lockTokens` function calculates the actual amount received by checking the balance before and after the transfer. If the token contract is manipulated, the actual amount received might be incorrect.
+- Access Control: The contract lacks an explicit access control mechanism, allowing any user to call `lockTokens` and `releaseTokens` functions. This could lead to potential risks in emergency situations.
+
+ATTACK STRATEGY:
+- Reentrancy Attack: Create a malicious contract that calls `releaseTokens` again when it receives tokens. This will allow the attacker to withdraw the same tokens and interest multiple times.
+- Fee Bypass: Manipulate the token contract to ensure that the actual amount transferred to the Vault is less than expected. This can be done by exploiting vulnerabilities in the token contract or by manipulating the tax fee mechanism.
+- Lack of Access Control: Exploit the lack of access control to perform unauthorized actions, such as locking and releasing tokens in an emergency situation.
+
+ATTACK FLOW:
+1. Reentrancy Attack:
+   1. Deploy a malicious contract that calls `releaseTokens` when it receives tokens.
+   2. Lock tokens in the SentinelVault.
+   3. Call `releaseTokens` from the malicious contract.
+   4. The malicious contract will receive the tokens and re-enter the `releaseTokens` function, allowing multiple withdrawals.
+2. Fee Bypass:
+   1. Manipulate the token contract to reduce the actual amount transferred to the Vault.
+   2. Lock tokens in the SentinelVault.
+   3. The actual amount received by the Vault will be less than expected, leading to discrepancies.
+3. Lack of Access Control:
+   1. Exploit the lack of access control to lock and release tokens in an unauthorized manner.
+   2. Perform these actions in an emergency situation to cause further damage.
+
+CODE SNIPPET (REFERENCE ONLY):
+function exploitReentrancy() {
+    // vm.prank(attacker)
+    // vault.releaseTokens()
+    // Malicious contract re-enters releaseTokens
+}
+
+function exploitFeeBypass() {
+    // Manipulate token contract to reduce actual amount transferred
+    // token.transferFrom(attacker, address(vault), amount)
+    // vault.lockTokens(amount, lockDuration)
+}
+
+function exploitAccessControl() {
+    // Exploit lack of access control to lock and release tokens
+    // vault.lockTokens(amount, lockDuration)
+    // vault.releaseTokens()
+}

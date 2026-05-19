@@ -1,0 +1,206 @@
+{
+  "test_cases": [
+    {
+      "name": "test_lock_tokens_positive",
+      "type": "positive",
+      "description": "User locks tokens successfully",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with valid amount and lockDuration",
+        "Verify TokensLocked event is emitted",
+        "Verify user's lock info in Vault"
+      ]
+    },
+    {
+      "name": "test_lock_tokens_negative_insufficient_balance",
+      "type": "negative",
+      "description": "User tries to lock more tokens than they have",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with amount greater than user's balance",
+        "Verify transaction reverts with 'Token transfer failed'"
+      ]
+    },
+    {
+      "name": "test_lock_tokens_negative_zero_amount",
+      "type": "negative",
+      "description": "User tries to lock zero tokens",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with amount = 0",
+        "Verify transaction reverts with 'Amount must be greater than 0'"
+      ]
+    },
+    {
+      "name": "test_lock_tokens_negative_zero_duration",
+      "type": "negative",
+      "description": "User tries to lock tokens with zero duration",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with lockDuration = 0",
+        "Verify transaction reverts with 'Lock duration must be greater than 0'"
+      ]
+    },
+    {
+      "name": "test_lock_tokens_negative_already_locked",
+      "type": "negative",
+      "description": "User tries to lock tokens when they already have active locked tokens",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with valid amount and lockDuration",
+        "Call lockTokens function again with valid amount and lockDuration",
+        "Verify transaction reverts with 'Already have active locked tokens'"
+      ]
+    },
+    {
+      "name": "test_release_tokens_positive",
+      "type": "positive",
+      "description": "User releases locked tokens successfully after unlock time",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with valid amount and lockDuration",
+        "Wait for the lockDuration to pass",
+        "Call releaseTokens function",
+        "Verify TokensReleased event is emitted",
+        "Verify user's lock info in Vault is updated"
+      ]
+    },
+    {
+      "name": "test_release_tokens_negative_before_unlock_time",
+      "type": "negative",
+      "description": "User tries to release tokens before unlock time",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with valid amount and lockDuration",
+        "Call releaseTokens function before lockDuration has passed",
+        "Verify transaction reverts with 'Tokens still locked'"
+      ]
+    },
+    {
+      "name": "test_release_tokens_negative_no_locked_tokens",
+      "type": "negative",
+      "description": "User tries to release tokens when they have no locked tokens",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Call releaseTokens function without locking any tokens",
+        "Verify transaction reverts with 'No locked tokens found'"
+      ]
+    },
+    {
+      "name": "test_release_tokens_negative_already_released",
+      "type": "negative",
+      "description": "User tries to release tokens that have already been released",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with valid amount and lockDuration",
+        "Wait for the lockDuration to pass",
+        "Call releaseTokens function",
+        "Call releaseTokens function again",
+        "Verify transaction reverts with 'Tokens already released'"
+      ]
+    },
+    {
+      "name": "test_can_release_positive",
+      "type": "positive",
+      "description": "Check if user can release tokens after unlock time",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with valid amount and lockDuration",
+        "Wait for the lockDuration to pass",
+        "Call canRelease function and verify it returns true"
+      ]
+    },
+    {
+      "name": "test_can_release_negative_before_unlock_time",
+      "type": "negative",
+      "description": "Check if user cannot release tokens before unlock time",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with valid amount and lockDuration",
+        "Call canRelease function before lockDuration has passed and verify it returns false"
+      ]
+    },
+    {
+      "name": "test_get_lock_info_positive",
+      "type": "positive",
+      "description": "Get user's lock info and verify it",
+      "contracts_involved": [
+        "Vault",
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract and mint tokens to user",
+        "Approve Vault contract to transfer tokens from user",
+        "Call lockTokens function with valid amount and lockDuration",
+        "Call getLockInfo function and verify the returned values match the expected lock info"
+      ]
+    },
+    {
+      "name": "test_access_control_owner_only_functions",
+      "type": "negative",
+      "description": "Non-owner tries to call owner-only functions",
+      "contracts_involved": [
+        "MyTokens"
+      ],
+      "steps": [
+        "Deploy MyTokens contract",
+        "Call setWhiteList, setExcludedFromFees, mint, pause, unpause functions as non-owner",
+        "Verify all transactions revert with 'Ownable: caller is not the owner'"
+      ]
+    }
+  ]
+}

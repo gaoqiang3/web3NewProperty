@@ -1,66 +1,30 @@
-## Foundry
+## AgnoAgentPipeline使用 
+是一个基于大语言模型自愈能力（Self-Healing）的智能合约自动化安全审计与集成测试流水线。
+它利用框架Agno，对接通义千问大模型（Qwen-Max），与以太坊工具 Foundry 物理联动，实现了一套
+代码分析 --用例生成 -- 动态编译测试 -- 报错反哺修正 的闭环自动化控制系统
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+### 1. 结构化标记防御解析（三明治夹心提取法）
+为了彻底解决大模型在返回结果时“嘴碎、夹带中文解释和 Markdown 符号（\`\`\`solidity\`\`\`）”导致编译器崩溃的痛点，脚本设计了严格的边界标记协议：
+* 通过 `=== CODE_START ===` 与 `=== CODE_END ===` 标记，利用 Python 的字符串切片与 `split()` 链式调用，在物理层面上对 AI 返回的原始数据实施两次精准的“切刀”，**100% 剥离出纯净、无污染的 Solidity 源码**。
 
-Foundry consists of:
+### 2. 闭环纠错与自愈机制（Error Feedback Loop）
+脚本的核心灵魂在于 `while` 驱动的闭环重试逻辑（默认最大迭代 5 次）：
+* 通过 `subprocess` 模块动态调起底层 Shell，执行 `forge test` 定向编译生成的临时攻击测试契约。
+* 如果 Foundry 编译失败或断言（Assertion）未通过，Python 会实时拦截 `stdout` 与 `stderr` 现场，将完整的报错堆栈日志（如经典的变量未定义、语法缺漏等）**以结构化上下文的形式再次砸回给大模型**，逼迫大模型在下一轮循环中像人类工程师一样进行“自我检讨”，并输出 `=== FIX_LOG ===` 变更日志。
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+### 3. 百炼网关风控绕过
+脚本在模型声明和提示词设计上进行了深度优化，确保在云端网关 100% 畅通无阻：
+* **去特权化声明**：彻底移除 Agno 框架底层的 `instructions` 和 `use_developer_prompt` 参数，防止触发阿里云百炼不认识的 `developer` 角色，保持最纯净的 OpenAI 兼容模式。
+* **技术语境包装**：将敏感的“黑客攻击、漏洞利用（Exploit）”等容易触发风控的词汇洗白，全面包装为标准的**软件工程质量保证（QA Engineer）与集成测试（Integration Testing）**语境。
 
-## Documentation
+---
 
-https://book.getfoundry.sh/
+## 4. 攻击合约提示词案例 手动去prompt添加
 
-## Usage
+请帮我编写一个逆向边界测试。故意传入不满足边界限制的越界参数，并使用 vm.expectRevert() 确保合约能够正确拦截这些非法操作。
 
-### Build
+请为我编写一个多步骤的时序组合测试。通过连续调用多个不同的函数，观察合约在频繁状态切换、资金进出后，内部的余额和状态账本是否依然守恒。
 
-```shell
-$ forge build
-```
+请为我编写一个严格的权限越权验证测试。切换至非 Owner 的 attacker 账户，强行调用合约的所有敏感修改器函数，确保每一个调用都会触发对应的权限 Revert
 
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+请为我编写一个精度损失与经济模型压力测试。利用极小的数量（如 1 wei）或极大的数值进行数学公式压测，验证由于 Solidity 整数除法向下取整带来的精度滑点，是否会破坏合约的资金守恒定理

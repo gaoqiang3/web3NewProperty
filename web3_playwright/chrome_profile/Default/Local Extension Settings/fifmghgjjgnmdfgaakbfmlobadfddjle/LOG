@@ -1,0 +1,17 @@
+2026/05/17-14:57:35.552 4f90 Reusing MANIFEST E:\learn\PythonProject1\web3_playwright\chrome_profile\Default\Local Extension Settings\fifmghgjjgnmdfgaakbfmlobadfddjle/MANIFEST-000001
+2026/05/17-14:57:35.552 4f90 Recovering log #43
+2026/05/17-14:57:35.561 4f90 Reusing old log E:\learn\PythonProject1\web3_playwright\chrome_profile\Default\Local Extension Settings\fifmghgjjgnmdfgaakbfmlobadfddjle/000043.log 
+2026/05/17-14:57:36.551 3b88 Compacting 1@0 + 3@1 files
+2026/05/17-14:57:36.562 3b88 Generated table #46@0: 54 keys, 2111332 bytes
+2026/05/17-14:57:36.583 3b88 Generated table #47@0: 7 keys, 2298756 bytes
+2026/05/17-14:57:36.602 3b88 Generated table #48@0: 7 keys, 2456049 bytes
+2026/05/17-14:57:36.617 3b88 Generated table #49@0: 9 keys, 1692420 bytes
+2026/05/17-14:57:36.617 3b88 Compacted 1@0 + 3@1 files => 8558557 bytes
+2026/05/17-14:57:36.619 3b88 compacted to: files[ 0 4 1 0 0 0 0 ]
+2026/05/17-14:57:36.619 3b88 Delete type=2 #40
+2026/05/17-14:57:36.619 3b88 Delete type=2 #41
+2026/05/17-14:57:36.619 3b88 Delete type=2 #42
+2026/05/17-14:57:36.619 3b88 Delete type=2 #44
+2026/05/17-14:57:42.525 4420 Level-0 table #51: started
+2026/05/17-14:57:42.537 4420 Level-0 table #51: 2021113 bytes OK
+2026/05/17-14:57:42.539 4420 Delete type=0 #43

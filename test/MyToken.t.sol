@@ -13,7 +13,7 @@ contract MyTokenTest is Test {
     address owner = makeAddr("owner");
     address alice = makeAddr("alice");
     address bob = makeAddr("bob");
-
+    event Transfer(address indexed from, address indexed to, uint256 value);
     // 相当于 pytest 的 setup，每个测试函数执行前都会跑一遍
     function setUp() public {
         // 1. 使用 vm.prank 模拟以 owner 身份部署合约
@@ -26,7 +26,7 @@ contract MyTokenTest is Test {
 
     // --- 基础逻辑测试 ---
 
-    function test_InitialState() public {
+    function test_InitialState() public  view {
         assertEq(token.owner(), owner);
         assertEq(token.balanceOf(owner), 0);
     }
@@ -73,7 +73,7 @@ contract MyTokenTest is Test {
         // 期待接下来的操作抛出 Transfer 事件
         // 参数分别对应：topic1, topic2, topic3, data 无论几个判断都要写四个bool
         vm.expectEmit(true, true, false, true);
-        emit IERC20.Transfer(alice, bob, 50);
+        emit Transfer(alice, bob, 50);
 
         vm.prank(alice);
         token.transfer(bob, 50); //断言这里

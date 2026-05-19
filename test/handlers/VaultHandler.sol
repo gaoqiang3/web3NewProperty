@@ -60,7 +60,7 @@ contract VaultHandler is Test {
             vm.prank(user);
             vault.releaseTokens();
 
-            // ✅ 只在成功取出时更新
+            // 成功取出时更新影子变量
             ghost_expectedTotalBalance -= lockedAmount;
         }
     }
